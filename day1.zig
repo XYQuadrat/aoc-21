@@ -1,6 +1,4 @@
 const std = @import("std");
-const utils = @import("./utils.zig");
-var gpa = utils.gpa;
 
 const data = @embedFile("./inputs/small1");
 
@@ -8,32 +6,35 @@ pub fn main() !void {
     var alloc = std.heap.page_allocator;
 
     var lines = std.mem.tokenize(u8, data, "\n");
+    var numbers = std.ArrayList(i64).init(alloc);
 
-    var numbers = std.ArrayList(u16).init(alloc);
-    defer numbers.deinit();
-
-    while(lines.next()) |line| {
-        var i = try std.fmt.parseInt(u16, std.mem.trimRight(u8, line, "\n"), 0);
-        try numbers.append(i);
+    while (lines.next()) |line| {
+        var x: i64 = try std.fmt.parseInt(i64, line, 10);
+        try numbers.append(x);
     }
 
-    var i : u16 = 2;
-    var total : u16 = 0;
+    var sliding = std.ArrayList(i64).init(alloc);
 
-    var previous : u16 = numbers.items[0] + numbers.items[1];
-    var current : u16 = numbers.items[1];
-    var next : u16 = 0;
-
-    while (i < numbers.items.len) : (i += 1) {
-        next = numbers.items[i];
-        current += numbers.items[i];
-        previous += numbers.items[i];
-        if(previous > current){
-            total += 1;
+    for (numbers.items) |x, index| {
+        try sliding.append(x);
+        if (index > 1) {
+            sliding.items[index - 1] += x;
         }
-        previous = current;
-        current = next;
+        if (index > 2) {
+            sliding.items[index - 2] += x;
+        }
     }
 
-    std.debug.print("\n{}\n", .{total});
+    std.debug.print("Task 1: {}\nTask 2: {}\n", .{ countIncreasing(numbers.items), countIncreasing(sliding.items) });
+}
+
+fn countIncreasing(array: []i64) u16 {
+    var i: u16 = 0;
+    var total: u16 = 0;
+
+    while (i < array.len - 1) : (i += 1) {
+        total += @boolToInt(array[i] < array[i + 1]);
+    }
+
+    return total;
 }
