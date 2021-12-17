@@ -2,7 +2,8 @@ const std = @import("std");
 const data = @embedFile("./inputs/large2");
 const Str = []const u8;
 
-pub fn main() !void {
+fn solveProblem() !i64 {
+    @setEvalBranchQuota(100_000);
     var lines = std.mem.tokenize(u8, data, "\n");
 
     var x : i64 = 0;
@@ -23,6 +24,13 @@ pub fn main() !void {
             aim -= dist;
         }
     }
+
+    var answer : i64 = try std.math.absInt(x * y);
+    return answer;
+}
+
+pub fn main() !void {
+    const answer = comptime solveProblem();
     
-    std.debug.print("{}\n",.{std.math.absInt(x * y)});
+    std.debug.print("{}\n",.{answer});
 }
